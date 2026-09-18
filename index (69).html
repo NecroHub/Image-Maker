@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Image Editor</title>
+<meta name="description" content="A self-contained, offline-capable image editor: crop, rotate, filter, retouch and export your own images.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <div class="orn">&#9670; &mdash;&mdash;&mdash; &#9670;</div>
+    <h1>Image Editor</h1>
+    <p class="sub">Crop, rotate, filter, retouch and export an image you already have.</p>
+
+    <div class="actions">
+      <button class="shell-btn" type="button" data-t2ie-open>Open Image Editor</button>
+      <button class="shell-btn ghost" type="button" id="pickBtn">Choose a file&hellip;</button>
+      <input type="file" id="fileInput" accept="image/*" hidden>
+    </div>
+
+    <div class="dropzone" id="shellDrop">
+      <b>Drop an image here</b>
+      <small>or paste one with Ctrl+V / &#8984;V. Everything happens locally inside your browser &mdash; no image ever leaves your device.</small>
+    </div>
+
+    <p class="note">
+      Inside the editor: <b>Adjust</b> (12 sliders), <b>Looks</b> (12 one-click presets),
+      <b>Reshape</b> (rotate, flip, crop with 6 aspect ratios, resize) and
+      <b>Save</b> (PNG / JPEG / WebP with a quality slider, download or copy to clipboard).
+    </p>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    (function () {
+      var drop = document.getElementById("shellDrop");
+      var input = document.getElementById("fileInput");
+
+      function openFile(file) {
+        if (!file) return;
+        if (file.type && file.type.indexOf("image/") !== 0) return;
+        window.t2iEditor.open();
+        setTimeout(function () { window.t2iEditor.loadFile(file); }, 30);
+      }
+
+      document.getElementById("pickBtn").addEventListener("click", function () { input.click(); });
+      drop.addEventListener("click", function () { input.click(); });
+      input.addEventListener("change", function () {
+        if (input.files && input.files[0]) openFile(input.files[0]);
+        input.value = "";
+      });
+
+      ["dragenter", "dragover"].forEach(function (t) {
+        drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add("hot"); });
+      });
+      ["dragleave", "drop"].forEach(function (t) {
+        drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.remove("hot"); });
+      });
+      drop.addEventListener("drop", function (e) {
+        var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) openFile(f);
+      });
+
+      document.addEventListener("dragover", function (e) { e.preventDefault(); });
+      document.addEventListener("drop", function (e) {
+        e.preventDefault();
+        var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) openFile(f);
+      });
+
+      window.addEventListener("paste", function (e) {
+        var items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+        for (var i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf("image") === 0) { openFile(items[i].getAsFile()); break; }
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
